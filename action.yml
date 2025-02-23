@@ -46,25 +46,19 @@ runs:
         ${{ inputs.template }}
         EOF
 
-        DATA=$(cat << EOF
-        ${{ inputs.data }}
-        EOF
-        )
+        DATA=$(printf '%s\n' "${{ inputs.data }}" | sed 's/"/\\"/g')
         awk -v data="$DATA" '
         {
           gsub(/ASM_DATA/, data);
           print
-        }' "template.s" > data.s
+        }' "template.s" > "data.s"
 
-        TEXT=$(cat << EOF
-        ${{ inputs.text }}
-        EOF
-        )
+        TEXT=$(printf '%s\n' "${{ inputs.text }}" | sed 's/"/\\"/g')
         awk -v text="$TEXT" '
         {
           gsub(/ASM_TEXT/, text);
           print
-        }' "data.s" > source.s
+        }' "data.s" > "source.s"
 
     - name: 'Run Script'
       shell: bash
