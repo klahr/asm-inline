@@ -46,13 +46,21 @@ runs:
         ${{ inputs.template }}
         EOF
 
-        awk -v data="${{ inputs.data }}" '
+        DATA=$(cat << EOF
+        ${{ inputs.data }}
+        EOF
+        )
+        awk -v data="$DATA" '
         {
           gsub(/ASM_DATA/, data);
           print
         }' "template.s" > data.s
 
-        awk -v text="${{ inputs.text }}" '
+        TEXT=$(cat << EOF
+        ${{ inputs.text }}
+        EOF
+        )
+        awk -v text="$TEXT" '
         {
           gsub(/ASM_TEXT/, text);
           print
