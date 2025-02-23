@@ -60,6 +60,11 @@ runs:
           print
         }' "data.s" > "source.s"
 
+        ls -al
+        cat source.s
+        cat template.s
+        cat data.s
+
     - name: 'Run Script'
       shell: bash
       working-directory: ${{ env.ASM_PROJECT }}
