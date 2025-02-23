@@ -1,0 +1,65 @@
+name: 'ASM Script'
+description: 'Run an assembly program'
+
+inputs:
+  data:
+    description: 'Data section'
+    required: false
+  text:
+    description: 'Text section'
+    required: true
+  template:
+    description: 'The Assmebly template'
+    required: false
+    default: |
+      section .data
+        ASM_DATA
+
+      section .text
+        ASM_TEXT
+
+        mov rax, 60       ; syscall number for sys_exit (64-bit)
+        xor rdi, rdi      ; exit status 0
+        syscall           ; call kernel
+
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        apt install nasm -y
+
+    - name: 'Create Project'
+      shell: bash
+      run: |
+        ASM_PROJECT=$(mktemp -d)
+        echo "ASM_PROJECT=$ASM_PROJECT" >> $GITHUB_ENV
+        cd "$ASM_PROJECT"
+
+    - name: 'Generate Script'
+      shell: bash
+      working-directory: ${{ env.ASM_PROJECT }}
+      run: |
+        set -e
+        printf '%s\n' "${{ inputs.template }}" > template.s
+
+        awk -v data="$(printf '%s' "${{ inputs.data }}")" \
+            -v text="$(printf '%s' "${{ inputs.text }}")" '
+        {
+          gsub(/ASM_DATA/, data);
+          gsub(/ASM_TEXT/, text);
+          print
+        }' template.s > source.s
+
+    - name: 'Run Script'
+      shell: bash
+      working-directory: ${{ env.ASM_PROJECT }}
+      run: |
+        ls -al
+        echo "----\n"
+        cat source.s
+        echo "\n----\n"
+        nasm -f elf64 source.s -o out.o
+        ld out.o -o out
+        ./out
+

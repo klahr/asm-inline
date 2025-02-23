@@ -1,0 +1,31 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+env:
+  ACTIONS_STEP_DEBUG: true
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: klahr/asm-inline@master
+        id: run
+        with:
+          data: |
+            message db "Hello, World!", 0xA
+            msg_len equ $ - message
+          text: |
+            global _start
+            _start:
+              mov rax, 1        ; syscall number for sys_write (64-bit)
+              mov rdi, 1        ; file descriptor 1 = stdout
+              mov rsi, message
+              mov rdx, msg_len
+              syscall           ; call kernel
+
+              mov rax, 60       ; syscall number for sys_exit (64-bit)
+              xor rdi, rdi      ; exit status 0
+              syscall           ; call kernel
