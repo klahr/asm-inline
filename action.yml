@@ -27,7 +27,7 @@ runs:
   steps:
     - shell: bash
       run: |
-        apt install nasm -y
+        sudo apt-get install nasm -y
 
     - name: 'Create Project'
       shell: bash
