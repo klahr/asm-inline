@@ -20,12 +20,8 @@ jobs:
           text: |
             global _start
             _start:
-              mov rax, 1        ; syscall number for sys_write (64-bit)
-              mov rdi, 1        ; file descriptor 1 = stdout
+              mov rax, 1
+              mov rdi, 1
               mov rsi, message
               mov rdx, msg_len
-              syscall           ; call kernel
-
-              mov rax, 60       ; syscall number for sys_exit (64-bit)
-              xor rdi, rdi      ; exit status 0
-              syscall           ; call kernel
+              syscall

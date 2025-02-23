@@ -41,10 +41,19 @@ runs:
       working-directory: ${{ env.ASM_PROJECT }}
       run: |
         set -e
-        printf '%s\n' "${{ inputs.template }}" > template.s
 
-        awk -v data="$(printf '%s' "${{ inputs.data }}")" \
-            -v text="$(printf '%s' "${{ inputs.text }}")" '
+        cat << EOF > template.s
+        ${{ inputs.template }}
+        EOF
+
+        awk -v data="$(cat <<EOF
+        ${{ inputs.data }}
+        EOF
+        | sed 's/"/\\"/g')" \
+            -v text="$(cat <<EOF
+        ${{ inputs.text }}
+        EOF
+        | sed 's/"/\\"/g')" '
         {
           gsub(/ASM_DATA/, data);
           gsub(/ASM_TEXT/, text);
@@ -55,10 +64,6 @@ runs:
       shell: bash
       working-directory: ${{ env.ASM_PROJECT }}
       run: |
-        ls -al
-        echo "----\n"
-        cat source.s
-        echo "\n----\n"
         nasm -f elf64 source.s -o out.o
         ld out.o -o out
         ./out
