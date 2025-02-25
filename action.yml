@@ -44,9 +44,10 @@ runs:
       run: |
         set -e
 
-        template <<EOF
+        template=$(cat <<EOF
         ${{ inputs.template }}
         EOF
+        )
 
         $template=$(echo "$template" | sed 's/ASM_DATA/${{ inputs.data }}/g')
         $template=$(echo "$template" | sed 's/ASM_TEXT/${{ inputs.text }}/g')
