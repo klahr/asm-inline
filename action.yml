@@ -49,8 +49,12 @@ runs:
         EOF
         )
 
-        $template=$(echo "$template" | sed 's/ASM_DATA/${{ inputs.data }}/g')
-        $template=$(echo "$template" | sed 's/ASM_TEXT/${{ inputs.text }}/g')
+        safe_data=$(printf '%s\n' "${{ inputs.data }}" | sed 's/[&/\]/\\&/g')
+        safe_text=$(printf '%s\n' "${{ inputs.text }}" | sed 's/[&/\]/\\&/g')
+
+        # Use double quotes around 's///' to allow variable expansion
+        template=$(echo "$template" | sed "s/ASM_DATA/$safe_data/g")
+        template=$(echo "$template" | sed "s/ASM_TEXT/$safe_text/g")
 
         echo "$template" > source.s
         cat source.s
