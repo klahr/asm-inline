@@ -16,11 +16,13 @@ inputs:
         ASM_DATA
 
       section .text
+        global _start
+        _start:
         ASM_TEXT
 
-        mov rax, 60       ; syscall number for sys_exit (64-bit)
-        xor rdi, rdi      ; exit status 0
-        syscall           ; call kernel
+        mov rax, 60
+        xor rdi, rdi
+        syscall
 
 runs:
   using: 'composite'
@@ -42,28 +44,12 @@ runs:
       run: |
         set -e
 
-        cat << EOF > template.s
-        ${{ inputs.template }}
-        EOF
+        $template=${{ inputs.template }}
+        $template=$(echo "$template" | sed 's/ASM_DATA/${{ inputs.data }}/g')
+        $template=$(echo "$template" | sed 's/ASM_TEXT/${{ inputs.text }}/g')
 
-        DATA=$(printf '%s\n' "${{ inputs.data }}" | sed 's/"/\\"/g')
-        awk -v data="$DATA" '
-        {
-          gsub(/ASM_DATA/, data);
-          print
-        }' "template.s" > "data.s"
-
-        TEXT=$(printf '%s\n' "${{ inputs.text }}" | sed 's/"/\\"/g')
-        awk -v text="$TEXT" '
-        {
-          gsub(/ASM_TEXT/, text);
-          print
-        }' "data.s" > "source.s"
-
-        ls -al
+        echo "$template" > source.s
         cat source.s
-        cat template.s
-        cat data.s
 
     - name: 'Run Script'
       shell: bash
